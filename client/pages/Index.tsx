@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import * as Dialog from "@radix-ui/react-dialog";
+import { PlusIcon, X } from "lucide-react";
 import StudentSelector from "@/components/StudentSelector";
 import TasksTable from "@/components/TasksTable";
 import {
@@ -8,6 +10,8 @@ import {
   type Student,
   type TaskStatus,
   updateTaskStatus,
+  createTask,
+  type CreateTaskData,
 } from "@/lib/api";
 
 export default function DoctorPage() {
@@ -18,7 +22,15 @@ export default function DoctorPage() {
     string | undefined
   >();
   const [loading, setLoading] = useState(true);
+  const [addLoading, setaddLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newTask, setNewTask] = useState<Omit<CreateTaskData, "studentId">>({
+    title: "",
+    description: "",
+    doctor_id: "",
+    student_id: "",
+  });
 
   useEffect(() => {
     if (!doctorUuid) return;
@@ -33,6 +45,7 @@ export default function DoctorPage() {
         const list = (d.doctor_students || []).map((ds) => ds.students);
         setStudents(list);
         setSelectedStudentId((prev) => prev ?? list[0]?.id);
+        setError(null);
       } catch (e: any) {
         setError(e?.message || "Failed to fetch data");
       } finally {
@@ -74,6 +87,58 @@ export default function DoctorPage() {
     }
   };
 
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setaddLoading(true);
+    if (!selectedStudent || !newTask.title.trim()) return;
+
+    try {
+      const taskData = {
+        ...newTask,
+        student_id: selectedStudent.id,
+        doctor_id: doctor.id,
+      };
+
+      console.log("Creating task:", taskData);
+      const createdTask = await createTask(taskData);
+
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          student.id === selectedStudent.id
+            ? {
+                ...student,
+                tasks: [...student.tasks, createdTask],
+              }
+            : student,
+        ),
+      );
+
+      // Reset form and close dialog
+      setNewTask({
+        title: "",
+        description: "",
+        doctor_id: doctor.id,
+        student_id: selectedStudent.id,
+      });
+      setaddLoading(false);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      setError("Failed to create task. Please try again.");
+      setaddLoading(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setNewTask((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] px-4 py-8 md:px-8">
       <div className="mx-auto w-full max-w-6xl">
@@ -88,6 +153,86 @@ export default function DoctorPage() {
               </p>
             ) : null}
           </div>
+          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog.Trigger asChild>
+              <button
+                className={`inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${addLoading ? "pointer-events-none opacity-50" : ""}`}
+              >
+                <PlusIcon className="h-4 w-4" />
+                Add Task
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <Dialog.Title className="text-lg font-semibold">
+                    Add New Task
+                  </Dialog.Title>
+                  <Dialog.Close asChild>
+                    <button
+                      className="text-slate-400 hover:text-slate-600"
+                      aria-label="Close"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </Dialog.Close>
+                </div>
+                <form onSubmit={handleCreateTask}>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="title"
+                      className="mb-1 block text-sm font-medium text-slate-700"
+                    >
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      value={newTask.title}
+                      onChange={handleInputChange}
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label
+                      htmlFor="description"
+                      className="mb-1 block text-sm font-medium text-slate-700"
+                    >
+                      Description
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={newTask.description}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <Dialog.Close asChild>
+                      <button
+                        type="button"
+                        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Cancel
+                      </button>
+                    </Dialog.Close>
+                    <button
+                      type="submit"
+                      className={`rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${addLoading ? "pointer-events-none opacity-50" : ""}`}
+                      disabled={!newTask.title.trim()}
+                    >
+                      Add Task
+                    </button>
+                  </div>
+                </form>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </header>
 
         <div className="mb-6">

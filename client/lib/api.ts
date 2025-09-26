@@ -31,11 +31,33 @@ export async function fetchDoctor(doctorId: string): Promise<DoctorResponse> {
   return (await res.json()) as DoctorResponse;
 }
 
-export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<void> {
+export async function updateTaskStatus(
+  taskId: string,
+  status: TaskStatus,
+): Promise<void> {
   const res = await fetch(`${API_BASE}/tasks/${taskId}/status/${status}`, {
     method: "PATCH",
   });
   if (!res.ok) throw new Error(`Failed to update task status: ${res.status}`);
+}
+
+export interface CreateTaskData {
+  title: string;
+  description: string;
+  student_id: string;
+  doctor_id: string;
+}
+
+export async function createTask(data: CreateTaskData): Promise<Task> {
+  const res = await fetch(`${API_BASE}/tasks`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to create task: ${res.status}`);
+  return res.json();
 }
 
 export function formatDate(value?: string | null): string {
