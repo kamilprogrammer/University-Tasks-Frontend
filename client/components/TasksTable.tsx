@@ -32,9 +32,15 @@ export default function TasksTable({ students, onToggle }: Props) {
           <TableRow className="bg-slate-50/60">
             <TableHead className="text-[#6B7280]">Student ID</TableHead>
             <TableHead className="text-[#6B7280]">Student Name</TableHead>
-            <TableHead className="text-[#6B7280]">Advice #1</TableHead>
-            <TableHead className="text-[#6B7280]">Advice #2</TableHead>
-            <TableHead className="text-[#6B7280]">Advice #3</TableHead>
+            <TableHead className="text-[#6B7280]">
+              Discuss 202520 plan with student
+            </TableHead>
+            <TableHead className="text-[#6B7280]">
+              Explain At-Risk to student
+            </TableHead>
+            <TableHead className="text-[#6B7280]">
+              Record student feedback
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -97,7 +103,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[0]?.title || "Null"}
+                      {s.tasks[0]?.status || "Null"}
                     </span>
                   </TableCell>
                   <TableCell
@@ -135,7 +141,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[1]?.title || "Null"}
+                      {s.tasks[1]?.status || "Null"}
                     </span>
                   </TableCell>
                   <TableCell
@@ -173,7 +179,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[2]?.title || "Null"}
+                      {s.tasks[2]?.status || "Null"}
                     </span>
                   </TableCell>
                 </TableRow>
