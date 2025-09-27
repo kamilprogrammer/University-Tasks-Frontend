@@ -13,13 +13,12 @@ import {
   createTask,
   type CreateTaskData,
 } from "@/lib/api";
-import { StudentWithTasks } from "@/lib/api";
 import LoadingOverlay from "@/components/LoadingOverlay";
 
 export default function DoctorPage() {
   const { doctorUuid } = useParams<{ doctorUuid: string }>();
   const [doctor, setDoctor] = useState<DoctorResponse | null>(null);
-  const [data, setData] = useState<StudentWithTasks[]>([]);
+  const [data, setData] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,17 +42,8 @@ export default function DoctorPage() {
         if (!mounted) return;
         setDoctor(d);
 
-        // Transform the data to match StudentWithTasks[]
-        const transformedData = d.doctor_students.map((item) => ({
-          ...item.students, // Spread the student properties
-          tasks: item.students.tasks || [], // Ensure tasks is always an array
-        }));
-
-        setData(
-          transformedData.sort((a, b) =>
-            a.name.localeCompare(b.name),
-          ) as StudentWithTasks[],
-        );
+        setData(d.students);
+        console.log(d);
         setError(null);
       } catch (e: any) {
         setError(e?.message || "Failed to fetch data");
@@ -235,11 +225,7 @@ export default function DoctorPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <TasksTable
-                student={data}
-                onToggle={handleToggle}
-                doctor={doctor}
-              />
+              <TasksTable students={data} onToggle={handleToggle} />
             </div>
           )}
         </div>

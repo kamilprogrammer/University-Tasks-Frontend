@@ -1,29 +1,11 @@
 export type TaskStatus = "pending" | "done";
 
-export interface StudentWithTasks {
-  id: string;
-  unique_id: string;
-  name: string;
-  email?: string | null;
-  created_at: string;
-  updated_at: string;
-  tasks: Array<{
-    id: string;
-    title: string;
-    description: string;
-    status: TaskStatus;
-    doctor_id: string;
-    student_id: string;
-    created_at: string;
-    updated_at: string;
-  }>;
-}
-
 export interface Task {
   id: string;
   title: string;
   description: string;
   status: TaskStatus;
+  student_id: string;
   // Optional timestamps (API may or may not return these)
   created_at?: string | null;
   updated_at?: string | null;
@@ -32,14 +14,16 @@ export interface Task {
 export interface Student {
   id: string;
   name: string;
+  doctor_id: string;
   email?: string | null;
   tasks: Task[];
+  unique_id: string;
 }
 
 export interface DoctorResponse {
   id: string;
   name: string;
-  doctor_students: { students: Student }[];
+  students: Student[];
 }
 
 const API_BASE = "https://university-tasks.onrender.com";

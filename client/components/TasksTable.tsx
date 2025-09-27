@@ -8,12 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { DoctorResponse, StudentWithTasks, TaskStatus } from "@/lib/api";
-import { formatDate } from "@/lib/api";
+import type { Student, TaskStatus } from "@/lib/api";
+import { useEffect } from "react";
 
 interface Props {
-  student: StudentWithTasks[];
-  doctor: DoctorResponse;
+  students: Student[];
   onToggle: (taskId: string, next: TaskStatus) => void;
 }
 
@@ -22,7 +21,10 @@ const statusStyles: Record<TaskStatus, { text: string; className: string }> = {
   done: { text: "Done", className: "text-[#10B981] bg-[#10B981]/10" },
 };
 
-export default function TasksTable({ student, onToggle, doctor }: Props) {
+export default function TasksTable({ students, onToggle }: Props) {
+  useEffect(() => {
+    console.log(students);
+  });
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <Table>
@@ -36,7 +38,7 @@ export default function TasksTable({ student, onToggle, doctor }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {student.length === 0 ? (
+          {students.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={5}
@@ -46,7 +48,8 @@ export default function TasksTable({ student, onToggle, doctor }: Props) {
               </TableCell>
             </TableRow>
           ) : (
-            student.map((s) => {
+            students.map((s) => {
+              console.log(s);
               const next = (id: string): TaskStatus =>
                 s.tasks.find((t) => t.id === id)?.status === "done"
                   ? "pending"
@@ -64,25 +67,19 @@ export default function TasksTable({ student, onToggle, doctor }: Props) {
                       onToggle(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[0].id,
+                            t.student_id === s.id && t.id === s.tasks[0].id,
                         )?.id,
                         next(
                           s.tasks.find(
                             (t) =>
-                              t.doctor_id === doctor.id &&
-                              t.student_id === s.id &&
-                              t.id === s.tasks[0].id,
+                              t.student_id === s.id && t.id === s.tasks[0].id,
                           )?.id,
                         ),
                       );
                       console.log(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[0].id,
+                            t.student_id === s.id && t.id === s.tasks[0].id,
                         )?.id,
                       );
                     }}
@@ -108,25 +105,19 @@ export default function TasksTable({ student, onToggle, doctor }: Props) {
                       onToggle(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[1].id,
+                            t.student_id === s.id && t.id === s.tasks[1].id,
                         )?.id,
                         next(
                           s.tasks.find(
                             (t) =>
-                              t.doctor_id === doctor.id &&
-                              t.student_id === s.id &&
-                              t.id === s.tasks[1].id,
+                              t.student_id === s.id && t.id === s.tasks[1].id,
                           )?.id,
                         ),
                       );
                       console.log(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[1].id,
+                            t.student_id === s.id && t.id === s.tasks[1].id,
                         )?.id,
                       );
                     }}
@@ -152,25 +143,19 @@ export default function TasksTable({ student, onToggle, doctor }: Props) {
                       onToggle(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[2]?.id,
+                            t.student_id === s.id && t.id === s.tasks[2]?.id,
                         )?.id,
                         next(
                           s.tasks.find(
                             (t) =>
-                              t.doctor_id === doctor.id &&
-                              t.student_id === s.id &&
-                              t.id === s.tasks[2]?.id,
+                              t.student_id === s.id && t.id === s.tasks[2]?.id,
                           )?.id,
                         ),
                       );
                       console.log(
                         s.tasks.find(
                           (t) =>
-                            t.doctor_id === doctor.id &&
-                            t.student_id === s.id &&
-                            t.id === s.tasks[2]?.id,
+                            t.student_id === s.id && t.id === s.tasks[2]?.id,
                         )?.id,
                       );
                     }}
