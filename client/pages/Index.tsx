@@ -41,8 +41,16 @@ export default function DoctorPage() {
         const d = await fetchDoctor(doctorUuid);
         if (!mounted) return;
         setDoctor(d);
+        const sortTasks = (students: Student[]) =>
+          students.map((student) => ({
+            ...student,
+            tasks: student.tasks.sort((a, b) => a.title.localeCompare(b.title)),
+          }));
 
-        setData(d.students.sort((a, b) => (a.name > b.name ? 1 : -1)));
+        setData(
+          sortTasks(d.students.sort((a, b) => (a.name > b.name ? 1 : -1))),
+        );
+
         console.log(d);
         setError(null);
       } catch (e: any) {
