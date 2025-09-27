@@ -103,7 +103,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[0]?.status || "Null"}
+                      {s.tasks[0]?.title || "Null"}
                     </span>
                   </TableCell>
                   <TableCell
@@ -141,7 +141,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[1]?.status || "Null"}
+                      {s.tasks[1]?.title || "Null"}
                     </span>
                   </TableCell>
                   <TableCell
@@ -179,7 +179,7 @@ export default function TasksTable({ students, onToggle }: Props) {
                               : "#F59E0B",
                         }}
                       />
-                      {s.tasks[2]?.status || "Null"}
+                      {s.tasks[2]?.title || "Null"}
                     </span>
                   </TableCell>
                 </TableRow>

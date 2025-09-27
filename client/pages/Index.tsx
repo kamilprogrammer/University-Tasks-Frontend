@@ -42,7 +42,7 @@ export default function DoctorPage() {
         if (!mounted) return;
         setDoctor(d);
 
-        setData(d.students);
+        setData(d.students.sort((a, b) => (a.name > b.name ? 1 : -1)));
         console.log(d);
         setError(null);
       } catch (e: any) {
