@@ -10,7 +10,12 @@ interface Props {
   className?: string;
 }
 
-export default function StudentSelector({ students, value, onChange, className }: Props) {
+export default function StudentSelector({
+  students,
+  value,
+  onChange,
+  className,
+}: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -27,7 +32,9 @@ export default function StudentSelector({ students, value, onChange, className }
 
   return (
     <div ref={ref} className={cn("w-full md:w-96", className)}>
-      <label className="mb-2 block text-sm font-medium text-slate-600">Select student</label>
+      <label className="mb-2 block text-sm font-medium text-slate-600">
+        Select student
+      </label>
       <div className="relative">
         <button
           type="button"
@@ -39,9 +46,13 @@ export default function StudentSelector({ students, value, onChange, className }
           <div className="flex flex-col truncate">
             {selected ? (
               <>
-                <span className="text-sm font-medium text-slate-900 truncate">{selected.name}</span>
+                <span className="text-sm font-medium text-slate-900 truncate">
+                  {selected.name}
+                </span>
                 {selected.email ? (
-                  <span className="text-xs text-slate-500 truncate">{selected.email}</span>
+                  <span className="text-xs text-slate-500 truncate">
+                    {selected.email}
+                  </span>
                 ) : null}
               </>
             ) : (
@@ -71,8 +82,12 @@ export default function StudentSelector({ students, value, onChange, className }
               )}
             >
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-slate-900">{s.name}</span>
-                {s.email ? <span className="text-xs text-slate-500">{s.email}</span> : null}
+                <span className="text-sm font-medium text-slate-900">
+                  {s.name}
+                </span>
+                {s.email ? (
+                  <span className="text-xs text-slate-500">{s.email}</span>
+                ) : null}
               </div>
             </button>
           ))}

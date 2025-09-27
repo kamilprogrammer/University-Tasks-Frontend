@@ -13,16 +13,15 @@ import {
   createTask,
   type CreateTaskData,
 } from "@/lib/api";
+import { StudentWithTasks } from "@/lib/api";
+import LoadingOverlay from "@/components/LoadingOverlay";
 
 export default function DoctorPage() {
   const { doctorUuid } = useParams<{ doctorUuid: string }>();
   const [doctor, setDoctor] = useState<DoctorResponse | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<
-    string | undefined
-  >();
+  const [data, setData] = useState<StudentWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addLoading, setaddLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState<Omit<CreateTaskData, "studentId">>({
@@ -32,6 +31,7 @@ export default function DoctorPage() {
     student_id: "",
   });
 
+  // Update your useEffect to transform the data
   useEffect(() => {
     if (!doctorUuid) return;
 
@@ -39,12 +39,21 @@ export default function DoctorPage() {
     (async () => {
       try {
         setLoading(true);
-        const d = await fetchDoctor(doctorUuid); // dynamic fetch
+        const d = await fetchDoctor(doctorUuid);
         if (!mounted) return;
         setDoctor(d);
-        const list = (d.doctor_students || []).map((ds) => ds.students);
-        setStudents(list);
-        setSelectedStudentId((prev) => prev ?? list[0]?.id);
+
+        // Transform the data to match StudentWithTasks[]
+        const transformedData = d.doctor_students.map((item) => ({
+          ...item.students, // Spread the student properties
+          tasks: item.students.tasks || [], // Ensure tasks is always an array
+        }));
+
+        setData(
+          transformedData.sort((a, b) =>
+            a.name.localeCompare(b.name),
+          ) as StudentWithTasks[],
+        );
         setError(null);
       } catch (e: any) {
         setError(e?.message || "Failed to fetch data");
@@ -58,78 +67,44 @@ export default function DoctorPage() {
     };
   }, [doctorUuid]);
 
-  const selectedStudent = useMemo(() => {
-    return students.find((s) => s.id === selectedStudentId);
-  }, [students, selectedStudentId]);
-
   const handleToggle = async (taskId: string, next: TaskStatus) => {
-    if (!selectedStudent) return;
-    const prev = selectedStudent.tasks.slice();
-    const optimistic = selectedStudent.tasks.map((t) =>
-      t.id === taskId
-        ? { ...t, status: next, updated_at: new Date().toISOString() }
-        : t,
-    );
-    setStudents((arr) =>
-      arr.map((s) =>
-        s.id === selectedStudent.id ? { ...s, tasks: optimistic } : s,
+    setUpdateLoading(true);
+    const prev = data.flatMap((student) => student.tasks);
+    const optimistic = data.flatMap((student) =>
+      student.tasks.map((task) =>
+        task.id === taskId
+          ? { ...task, status: next, updated_at: new Date().toISOString() }
+          : task,
       ),
     );
+
     try {
       await updateTaskStatus(taskId, next);
+      // Update the state with the optimistic update
+      setData((prevData) =>
+        prevData.map((student) => ({
+          ...student,
+          tasks: student.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, status: next, updated_at: new Date().toISOString() }
+              : task,
+          ),
+        })),
+      );
     } catch (e) {
-      setStudents((arr) =>
-        arr.map((s) =>
-          s.id === selectedStudent.id ? { ...s, tasks: prev } : s,
-        ),
+      // Revert to previous state on error
+      setData((prevData) =>
+        prevData.map((student) => ({
+          ...student,
+          tasks: prev,
+        })),
       );
       console.error(e);
+    } finally {
+      setUpdateLoading(false);
     }
   };
-
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setaddLoading(true);
-    if (!selectedStudent || !newTask.title.trim()) return;
-
-    try {
-      const taskData = {
-        ...newTask,
-        student_id: selectedStudent.id,
-        doctor_id: doctor.id,
-      };
-
-      console.log("Creating task:", taskData);
-      const createdTask = await createTask(taskData);
-
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          student.id === selectedStudent.id
-            ? {
-                ...student,
-                tasks: [...student.tasks, createdTask],
-              }
-            : student,
-        ),
-      );
-
-      // Reset form and close dialog
-      setNewTask({
-        title: "",
-        description: "",
-        doctor_id: doctor.id,
-        student_id: selectedStudent.id,
-      });
-      setaddLoading(false);
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to create task:", error);
-      setError("Failed to create task. Please try again.");
-      setaddLoading(false);
-    }
-  };
-
-  const handleInputChange = (
+  /*const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
@@ -137,56 +112,60 @@ export default function DoctorPage() {
       ...prev,
       [name]: value,
     }));
-  };
+  };*/
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] px-4 py-8 md:px-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-6 flex flex-col items-start justify-between gap-4 md:mb-8 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Academic Mission Control System
-            </h1>
-            {doctor ? (
-              <p className="mt-[0.5px] text-sm text-slate-500">
-                Dr. {doctor.name}
-              </p>
-            ) : null}
-          </div>
-          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <>
+      {updateLoading && <LoadingOverlay />}
+
+      <div className="min-h-screen bg-[hsl(var(--background))] px-4 py-8 md:px-8">
+        <div className="mx-auto w-full max-w-6xl">
+          <header className="mb-6 flex flex-col items-start justify-between gap-4 md:mb-8 md:flex-row md:items-center">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Smart Academic Advising System
+              </h1>
+              {doctor ? (
+                <p className="mt-[0.5px] text-sm text-slate-500">
+                  Dr. {doctor.name}
+                </p>
+              ) : null}
+            </div>
+            {/*<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger asChild>
-              <button
-                className={`inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${addLoading ? "pointer-events-none opacity-50" : ""}`}
-              >
-                <PlusIcon className="h-4 w-4" />
-                Add Task
-              </button>
+            <button
+            className={`inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${addLoading ? "pointer-events-none opacity-50" : ""}`}
+            >
+            <PlusIcon className="h-4 w-4" />
+            Add Task
+            </button>
             </Dialog.Trigger>
             <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-              <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-                <div className="mb-4 flex items-center justify-between">
-                  <Dialog.Title className="text-lg font-semibold">
-                    Add New Task
-                  </Dialog.Title>
-                  <Dialog.Close asChild>
-                    <button
-                      className="text-slate-400 hover:text-slate-600"
-                      aria-label="Close"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </Dialog.Close>
-                </div>
-                <form onSubmit={handleCreateTask}>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="title"
-                      className="mb-1 block text-sm font-medium text-slate-700"
-                    >
+            <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+            <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-4 flex items-center justify-between">
+            <Dialog.Title className="text-lg font-semibold">
+            Add New Task
+            </Dialog.Title>
+            <Dialog.Close asChild>
+            <button
+            className="text-slate-400 hover:text-slate-600"
+            aria-label="Close"
+            >
+            <X className="h-5 w-5" />
+            </button>
+            </Dialog.Close>
+            </div>
+            {/*
+            <form onSubmit={handleCreateTask}>
+            <div className="mb-4">
+            <label
+            htmlFor="title"
+            className="mb-1 block text-sm font-medium text-slate-700"
+            >
                       Title <span className="text-red-500">*</span>
-                    </label>
-                    <input
+                      </label>
+                      <input
                       type="text"
                       id="title"
                       name="title"
@@ -194,74 +173,77 @@ export default function DoctorPage() {
                       onChange={handleInputChange}
                       className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       required
-                    />
-                  </div>
-                  <div className="mb-6">
-                    <label
+                      />
+                      </div>
+                      <div className="mb-6">
+                      <label
                       htmlFor="description"
                       className="mb-1 block text-sm font-medium text-slate-700"
-                    >
+                      >
                       Description
-                    </label>
-                    <textarea
+                      </label>
+                      <textarea
                       id="description"
                       name="description"
                       value={newTask.description}
                       onChange={handleInputChange}
                       rows={3}
                       className="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <Dialog.Close asChild>
+                      />
+                      </div>
+                      <div className="flex justify-end gap-3">
+                      <Dialog.Close asChild>
                       <button
-                        type="button"
-                        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      type="button"
+                      className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                       >
-                        Cancel
+                      Cancel
                       </button>
-                    </Dialog.Close>
-                    <button
+                      </Dialog.Close>
+                      <button
                       type="submit"
                       className={`rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${addLoading ? "pointer-events-none opacity-50" : ""}`}
                       disabled={!newTask.title.trim()}
-                    >
+                      >
                       Add Task
-                    </button>
+                      </button>
                   </div>
-                </form>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
-        </header>
+                  </form>
+                  </Dialog.Content>
+                  </Dialog.Portal>
+                  </Dialog.Root>*/}
+          </header>
 
+          {/*
         <div className="mb-6">
           <div className="mx-0 w-full">
             <StudentSelector
-              students={students}
-              value={selectedStudentId}
-              onChange={setSelectedStudentId}
+            students={students}
+            value={selectedStudentId}
+            onChange={setSelectedStudentId}
             />
-          </div>
+            </div>
+            </div>
+            */}
+          {loading ? (
+            <div className="flex items-center justify-center rounded-xl border border-slate-200 bg-white p-10 text-slate-500 shadow-sm">
+              Loading...
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+              {error}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <TasksTable
+                student={data}
+                onToggle={handleToggle}
+                doctor={doctor}
+              />
+            </div>
+          )}
         </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center rounded-xl border border-slate-200 bg-white p-10 text-slate-500 shadow-sm">
-            Loading...
-          </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-            {error}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <TasksTable
-              tasks={selectedStudent?.tasks ?? []}
-              onToggle={handleToggle}
-            />
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,24 @@
 export type TaskStatus = "pending" | "done";
 
+export interface StudentWithTasks {
+  id: string;
+  unique_id: string;
+  name: string;
+  email?: string | null;
+  created_at: string;
+  updated_at: string;
+  tasks: Array<{
+    id: string;
+    title: string;
+    description: string;
+    status: TaskStatus;
+    doctor_id: string;
+    student_id: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+}
+
 export interface Task {
   id: string;
   title: string;

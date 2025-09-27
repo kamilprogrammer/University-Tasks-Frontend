@@ -107,3 +107,30 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* Disable text selection */
+* {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+
+  /* Optional: Change cursor to default (arrow) for all elements */
+  cursor: default !important;
+}
+
+/* If you want to re-enable text selection for specific elements */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Optionally, change the cursor to pointer for clickable elements */
+button,
+a,
+[role="button"],
+[onclick] {
+  cursor: pointer !important;
+}
