@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import type { Student, TaskStatus } from "@/lib/api";
 import { useEffect } from "react";
+import { Checkbox } from "./ui/checkbox";
 
 interface Props {
   students: Student[];
@@ -68,116 +69,90 @@ export default function TasksTable({ students, onToggle }: Props) {
                   <TableCell className="font-medium text-slate-600">
                     {s.name}
                   </TableCell>
-                  <TableCell
-                    onDoubleClick={() => {
-                      onToggle(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[0].id,
-                        )?.id,
-                        next(
-                          s.tasks.find(
-                            (t) =>
-                              t.student_id === s.id && t.id === s.tasks[0].id,
-                          )?.id,
-                        ),
-                      );
-                      console.log(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[0].id,
-                        )?.id,
-                      );
-                    }}
-                    className="text-slate-600"
-                  >
+                  <TableCell className="text-slate-600">
                     <span
-                      className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium ${statusStyles[s.tasks[0]?.status || "pending"].className}`}
+                      className={`pointer-events-auto inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium ${statusStyles[s.tasks[0]?.status || "pending"].className}`}
                     >
-                      <span
-                        className="relative -ml-1 h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            s.tasks[0]?.status === "done"
-                              ? "#10B981"
-                              : "#F59E0B",
-                        }}
+                      <Checkbox
+                        checked={s.tasks[0]?.status === "done"}
+                        className={`border-0 pointer-events-auto data-[state=checked]:bg-[#10B981] data-[state=unchecked]:bg-[#F59E0B] ${s.tasks[0]?.status === "done" ? "bg-[#10B981]" : "bg-[#F59E0B]"}`}
+                        color={
+                          s.tasks[0]?.status === "done" ? "#10B981" : "#F59E0B"
+                        }
+                        onCheckedChange={() =>
+                          onToggle(
+                            s.tasks.find(
+                              (t) =>
+                                t.student_id === s.id && t.id === s.tasks[0].id,
+                            )?.id,
+                            next(
+                              s.tasks.find(
+                                (t) =>
+                                  t.student_id === s.id &&
+                                  t.id === s.tasks[0].id,
+                              )?.id,
+                            ),
+                          )
+                        }
                       />
+
                       {s.tasks[0]?.title || "Null"}
                     </span>
                   </TableCell>
-                  <TableCell
-                    onDoubleClick={() => {
-                      onToggle(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[1].id,
-                        )?.id,
-                        next(
-                          s.tasks.find(
-                            (t) =>
-                              t.student_id === s.id && t.id === s.tasks[1].id,
-                          )?.id,
-                        ),
-                      );
-                      console.log(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[1].id,
-                        )?.id,
-                      );
-                    }}
-                    className="text-slate-600"
-                  >
+                  <TableCell className="text-slate-600">
                     <span
-                      className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium ${statusStyles[s.tasks[1]?.status || "pending"].className}`}
+                      className={`pointer-events-auto inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium ${statusStyles[s.tasks[1]?.status || "pending"].className}`}
                     >
-                      <span
-                        className="relative -ml-1 h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            s.tasks[1]?.status === "done"
-                              ? "#10B981"
-                              : "#F59E0B",
-                        }}
+                      <Checkbox
+                        checked={s.tasks[1]?.status === "done"}
+                        className={`border-0 pointer-events-auto data-[state=checked]:bg-[#10B981] data-[state=unchecked]:bg-[#F59E0B] ${s.tasks[1]?.status === "done" ? "bg-[#10B981]" : "bg-[#F59E0B]"}`}
+                        color={
+                          s.tasks[1]?.status === "done" ? "#10B981" : "#F59E0B"
+                        }
+                        onCheckedChange={() =>
+                          onToggle(
+                            s.tasks.find(
+                              (t) =>
+                                t.student_id === s.id && t.id === s.tasks[1].id,
+                            )?.id,
+                            next(
+                              s.tasks.find(
+                                (t) =>
+                                  t.student_id === s.id &&
+                                  t.id === s.tasks[1].id,
+                              )?.id,
+                            ),
+                          )
+                        }
                       />
                       {s.tasks[1]?.title || "Null"}
                     </span>
                   </TableCell>
-                  <TableCell
-                    onDoubleClick={() => {
-                      onToggle(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[2]?.id,
-                        )?.id,
-                        next(
-                          s.tasks.find(
-                            (t) =>
-                              t.student_id === s.id && t.id === s.tasks[2]?.id,
-                          )?.id,
-                        ),
-                      );
-                      console.log(
-                        s.tasks.find(
-                          (t) =>
-                            t.student_id === s.id && t.id === s.tasks[2]?.id,
-                        )?.id,
-                      );
-                    }}
-                    className="text-slate-600"
-                  >
+                  <TableCell className="text-slate-600">
                     <span
                       className={`inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium ${statusStyles[s.tasks[2]?.status || "pending"].className}`}
                     >
-                      <span
-                        className="relative -ml-1 h-2.5 w-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            s.tasks[2]?.status === "done"
-                              ? "#10B981"
-                              : "#F59E0B",
-                        }}
+                      <Checkbox
+                        checked={s.tasks[2]?.status === "done"}
+                        className={`border-0 pointer-events-auto data-[state=checked]:bg-[#10B981] data-[state=unchecked]:bg-[#F59E0B] ${s.tasks[2]?.status === "done" ? "bg-[#10B981]" : "bg-[#F59E0B]"}`}
+                        color={
+                          s.tasks[2]?.status === "done" ? "#10B981" : "#F59E0B"
+                        }
+                        onCheckedChange={() =>
+                          onToggle(
+                            s.tasks.find(
+                              (t) =>
+                                t.student_id === s.id && t.id === s.tasks[2].id,
+                            )?.id,
+                            next(
+                              s.tasks.find(
+                                (t) =>
+                                  t.student_id === s.id &&
+                                  t.id === s.tasks[2].id,
+                              )?.id,
+                            ),
+                          )
+                        }
                       />
                       {s.tasks[2]?.title || "Null"}
                     </span>
