@@ -42,7 +42,7 @@ const exportToExcel = (students: Student[]) => {
   const ws = XLSX.utils.json_to_sheet(data);
 
   // Add the worksheet to the workbook
-  XLSX.utils.book_append_sheet(wb, ws, "Student Tasks");
+  XLSX.utils.book_append_sheet(wb, ws, "Data");
 
   // Generate Excel file and trigger download
   XLSX.writeFile(wb, "student_tasks.xlsx");
