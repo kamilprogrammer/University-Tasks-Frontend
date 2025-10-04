@@ -281,7 +281,7 @@ export default function DoctorPage() {
                 <div className="flex space-x-2 justify-center">
                   <Button
                     onClick={() => exportToExcel(allStudents)}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                    className="flex items-center gap-2 bg-[#2185D5] hover:bg-[#186db3]"
                   >
                     <Download className="h-4 w-4" />
                     Export to Excel
