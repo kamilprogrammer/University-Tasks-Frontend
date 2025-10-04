@@ -29,6 +29,8 @@ export default function DoctorPage() {
     doctor_id: "",
     student_id: "",
   });
+  type StudentWithProfessor = Student & { professorName: string };
+  const [allStudents, setAllStudents] = useState<StudentWithProfessor[]>([]);
 
   // Update your useEffect to transform the data
   useEffect(() => {
@@ -40,16 +42,36 @@ export default function DoctorPage() {
         setLoading(true);
         const d = await fetchDoctor(doctorUuid);
         if (!mounted) return;
-        setDoctor(d);
-        const sortTasks = (students: Student[]) =>
-          students.map((student) => ({
-            ...student,
-            tasks: student.tasks.sort((a, b) => a.title.localeCompare(b.title)),
-          }));
+        console.log(d);
+        if (d instanceof Array) {
+          const sortDoctors = (doctors: DoctorResponse[]) =>
+            doctors.sort((a, b) => (a.name > b.name ? 1 : -1));
+          const allStudents = sortDoctors(d).flatMap((doctor) =>
+            doctor.students.map((student) => ({
+              ...student,
+              professorName: doctor.name,
+              tasks: student.tasks.sort((a, b) => (a.title > b.title ? 1 : -1)),
+            })),
+          );
+          setAllStudents(allStudents);
+        } else {
+          setDoctor(d);
+          const sortTasks = (students: Student[]) =>
+            students.map((student) => ({
+              ...student,
+              tasks: student.tasks.sort((a, b) =>
+                a.title.localeCompare(b.title),
+              ),
+            }));
 
-        setData(
-          sortTasks(d.students.sort((a, b) => (a.name > b.name ? 1 : -1))),
-        );
+          setData(
+            sortTasks(
+              (d as DoctorResponse).students.sort((a, b) =>
+                a.name > b.name ? 1 : -1,
+              ),
+            ),
+          );
+        }
 
         console.log(d);
         setError(null);
@@ -117,17 +139,18 @@ export default function DoctorPage() {
       {updateLoading && <LoadingOverlay />}
 
       <div className="min-h-screen bg-[hsl(var(--background))] px-4 py-8 md:px-8">
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="mx-auto w-full max-w-7xl">
           <header className="mb-6 flex flex-col items-start justify-between gap-4 md:mb-8 md:flex-row md:items-center">
             <div>
               <h1 className="text-2xl font-semibold text-slate-900">
-                Smart Academic Advising System
+                Smart Academic Advising System
               </h1>
-              {doctor ? (
+              {
                 <p className="mt-[0.5px] text-sm text-slate-500">
-                  Dr. {doctor.name}
+                  {allStudents.length > 0 ? "Admin Page" : ""}
+                  {doctor && doctor.name}
                 </p>
-              ) : null}
+              }
             </div>
             {/*<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger asChild>
@@ -231,11 +254,19 @@ export default function DoctorPage() {
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               {error}
             </div>
-          ) : (
+          ) : doctor ? (
             <div className="space-y-4">
-              <TasksTable students={data} onToggle={handleToggle} />
+              <TasksTable all={false} students={data} onToggle={handleToggle} />
             </div>
-          )}
+          ) : allStudents.length > 0 ? (
+            <div className="space-y-4">
+              <TasksTable
+                all={true}
+                students={allStudents}
+                onToggle={handleToggle}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </>

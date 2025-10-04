@@ -18,6 +18,7 @@ export interface Student {
   email?: string | null;
   tasks: Task[];
   unique_id: string;
+  professorName?: string;
 }
 
 export interface DoctorResponse {
@@ -25,13 +26,20 @@ export interface DoctorResponse {
   name: string;
   students: Student[];
 }
-
 const API_BASE = "https://university-tasks.onrender.com";
 
-export async function fetchDoctor(doctorId: string): Promise<DoctorResponse> {
-  const res = await fetch(`${API_BASE}/doctors/${doctorId}`);
-  if (!res.ok) throw new Error(`Failed to fetch doctor: ${res.status}`);
-  return (await res.json()) as DoctorResponse;
+export async function fetchDoctor(
+  doctorId: string,
+): Promise<DoctorResponse | DoctorResponse[]> {
+  if (doctorId == "19a07e8b-d6ed-4b58-a650-f83814a4af2a") {
+    const res = await fetch(`${API_BASE}/doctors/${doctorId}`);
+    if (!res.ok) throw new Error(`Failed to fetch doctor: ${res.status}`);
+    return (await res.json()) as DoctorResponse[];
+  } else {
+    const res = await fetch(`${API_BASE}/doctors/${doctorId}`);
+    if (!res.ok) throw new Error(`Failed to fetch doctor: ${res.status}`);
+    return (await res.json()) as DoctorResponse;
+  }
 }
 
 export async function updateTaskStatus(
