@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import * as Dialog from "@radix-ui/react-dialog";
-import { PlusIcon, X } from "lucide-react";
-import StudentSelector from "@/components/StudentSelector";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import TasksTable from "@/components/TasksTable";
@@ -36,7 +33,6 @@ export default function DoctorPage() {
   const [allStudents, setAllStudents] = useState<StudentWithProfessor[]>([]);
 
   const exportToExcel = (students: Student[]) => {
-    // Prepare data for Excel
     const data = students.map((student) => ({
       ID: student.unique_id,
       "Student Name": student.name,
@@ -48,18 +44,14 @@ export default function DoctorPage() {
         student.tasks[2]?.status === "done" ? "Yes" : "No",
     }));
 
-    // Create a new workbook
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
 
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Student Tasks");
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
 
-    // Generate Excel file and trigger download
-    XLSX.writeFile(wb, "student_tasks.xlsx");
+    XLSX.writeFile(wb, "Data.xlsx");
   };
 
-  // Update your useEffect to transform the data
   useEffect(() => {
     if (!doctorUuid) return;
 
@@ -127,7 +119,6 @@ export default function DoctorPage() {
 
     try {
       await updateTaskStatus(taskId, next);
-      // Update the state with the optimistic update
       setData((prevData) =>
         prevData.map((student) => ({
           ...student,
@@ -139,7 +130,6 @@ export default function DoctorPage() {
         })),
       );
     } catch (e) {
-      // Revert to previous state on error
       setData((prevData) =>
         prevData.map((student) => ({
           ...student,
