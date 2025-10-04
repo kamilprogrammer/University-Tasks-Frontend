@@ -45,7 +45,7 @@ const exportToExcel = (students: Student[]) => {
   XLSX.utils.book_append_sheet(wb, ws, "Data");
 
   // Generate Excel file and trigger download
-  XLSX.writeFile(wb, "student_tasks.xlsx");
+  XLSX.writeFile(wb, "Data.xlsx");
 };
 
 export default function TasksTable({ students, onToggle, all }: Props) {
