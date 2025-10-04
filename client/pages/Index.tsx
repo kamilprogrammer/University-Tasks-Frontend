@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
 import { PlusIcon, X } from "lucide-react";
 import StudentSelector from "@/components/StudentSelector";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import TasksTable from "@/components/TasksTable";
+import * as XLSX from "xlsx";
 import {
   type DoctorResponse,
   fetchDoctor,
@@ -31,6 +34,30 @@ export default function DoctorPage() {
   });
   type StudentWithProfessor = Student & { professorName: string };
   const [allStudents, setAllStudents] = useState<StudentWithProfessor[]>([]);
+
+  const exportToExcel = (students: Student[]) => {
+    // Prepare data for Excel
+    const data = students.map((student) => ({
+      ID: student.unique_id,
+      "Student Name": student.name,
+      Professor: student.professorName,
+      "Discuss 202520 Plan": student.tasks[0]?.status === "done" ? "Yes" : "No",
+      "Explain At-Risk to student":
+        student.tasks[1]?.status === "done" ? "Yes" : "No",
+      "Record Student Feedback":
+        student.tasks[2]?.status === "done" ? "Yes" : "No",
+    }));
+
+    // Create a new workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Student Tasks");
+
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, "student_tasks.xlsx");
+  };
 
   // Update your useEffect to transform the data
   useEffect(() => {
@@ -260,11 +287,17 @@ export default function DoctorPage() {
             </div>
           ) : allStudents.length > 0 ? (
             <div className="space-y-4">
-              <TasksTable
-                all={true}
-                students={allStudents}
-                onToggle={handleToggle}
-              />
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm p-4">
+                <div className="flex space-x-2 justify-center">
+                  <Button
+                    onClick={() => exportToExcel(allStudents)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export to Excel
+                  </Button>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>

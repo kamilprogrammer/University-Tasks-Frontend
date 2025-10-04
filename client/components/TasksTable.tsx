@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Download, Check } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
   Table,
@@ -54,17 +52,6 @@ export default function TasksTable({ students, onToggle, all }: Props) {
   });
   return (
     <div className="space-y-4">
-      {all && (
-        <div className="flex justify-end">
-          <Button
-            onClick={() => exportToExcel(students)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Download className="h-4 w-4" />
-            Export to Excel
-          </Button>
-        </div>
-      )}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <Table>
           <TableHeader>
